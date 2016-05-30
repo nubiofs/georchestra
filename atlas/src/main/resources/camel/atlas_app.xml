@@ -70,7 +70,7 @@
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                   streamCache="true">
 
-        <!--<routeContextRef ref="mapfish"/>-->
+        <routeContextRef ref="mapfish"/>
 
         <restConfiguration component="servlet">
             <componentProperty key="enableCors" value="true"/>
@@ -123,6 +123,8 @@
             <!-- check json format -->
             <unmarshal ref="gson"/>
             <marshal ref="gson"/>
+
+            <!-- Add check bean -->
 
         </route>
 
@@ -188,7 +190,7 @@
                 <simple>${body[pages]}</simple>
                 <choice>
                     <when>
-                        <simple>${exchangeProperty.displayLegend} == true</simple>
+                        <simple>${exchangeProperty.displayLegend} == true and ${body[bbox]} != null</simple>
                         <transform>
                             <simple>
                                 { "layout": "${exchangeProperty.layout}",
@@ -200,11 +202,52 @@
                                     "map": {
                                         "dpi": ${exchangeProperty.dpi},
                                         "projection": "${exchangeProperty.projection}",
-                                        "center": ${body[center]},
-                                        "scale": ${body[scale]},
+                                        "bbox": ${body[bbox]},
                                         "layers": ${exchangeProperty.layers}
                                     }
                                   }
+                                }
+                            </simple>
+                        </transform>
+                    </when>
+                    <when>
+                        <simple>${exchangeProperty.displayLegend} == true and ${body[bbox]} == null</simple>
+                        <transform>
+                            <simple>
+                                { "layout": "${exchangeProperty.layout}",
+                                "outputFormat": "PDF",
+                                "attributes": {
+                                "title": "${body[title]}",
+                                "subtitle": "${body[subtitle]}",
+                                "legendURL": "${exchangeProperty.legendURL}",
+                                "map": {
+                                "dpi": ${exchangeProperty.dpi},
+                                "projection": "${exchangeProperty.projection}",
+                                "center": ${body[center]},
+                                "scale": ${body[scale]},
+                                "layers": ${exchangeProperty.layers}
+                                }
+                                }
+                                }
+                            </simple>
+                        </transform>
+                    </when>
+                    <when>
+                        <simple>${exchangeProperty.displayLegend} == false and ${body[bbox]} != null</simple>
+                        <transform>
+                            <simple>
+                                { "layout": "${exchangeProperty.layout}",
+                                "outputFormat": "PDF",
+                                "attributes": {
+                                "title": "${body[title]}",
+                                "subtitle": "${body[subtitle]}",
+                                "map": {
+                                "dpi": ${exchangeProperty.dpi},
+                                "projection": "${exchangeProperty.projection}",
+                                "bbox": ${body[bbox]},
+                                "layers": ${exchangeProperty.layers}
+                                }
+                                }
                                 }
                             </simple>
                         </transform>
